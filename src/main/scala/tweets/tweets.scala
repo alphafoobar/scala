@@ -11,10 +11,11 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository
 import org.springframework.stereotype.Service
+import org.springframework.web.bind.annotation.{GetMapping, RestController}
 import org.springframework.web.reactive.function.server.RequestPredicates._
 import org.springframework.web.reactive.function.server.RouterFunctions._
 import org.springframework.web.reactive.function.server.ServerResponse._
-import reactor.core.publisher.Flux
+import reactor.core.publisher.{Flux, Mono}
 
 import scala.beans.BeanProperty
 import scala.collection.JavaConverters
@@ -29,7 +30,10 @@ class Application {
     val josh = Author("starbuxman")
     val tweets = Flux.just(
       Tweet("Woot, Konrad will be talking about #Enterprise #Integration done right! #akka #alpakka", viktor),
-      Tweet("#scala implicits can easily be used to model Capabilities, but can they encode Obligations easily?\n\n* Easy as in: ergonomically.", viktor),
+      Tweet(
+        s"""#scala implicits can easily be used to model Capabilities, but can they encode Obligations easily?
+           |* Easy as in: ergonomically.
+         """.stripMargin, viktor),
       Tweet("This is so cool! #akka", viktor),
       Tweet("Cross Data Center replication of Event Sourced #Akka Actors is soon available (using #CRDTs, and more).", jonas),
       Tweet("a reminder: @SpringBoot lets you pair-program with the #Spring team.", josh),
@@ -82,7 +86,7 @@ class TweetRouteConfiguration(tweetService: TweetService) {
 
 }
 
-/*
+
 @RestController
 class TweetRestController(ts: TweetService) {
 
@@ -91,8 +95,11 @@ class TweetRestController(ts: TweetService) {
 
   @GetMapping(Array("/tweets"))
   def tweets(): Publisher[Tweet] = ts.tweets()
+
+  @GetMapping(Array("/ping"))
+  def ping(): Publisher[String] = Mono.just("hello world")
 }
-*/
+
 
 object Application extends App {
   SpringApplication.run(classOf[Application], args: _*)
@@ -119,5 +126,4 @@ case class Tweet(@BeanProperty @Id text: String, @BeanProperty author: Author) {
       }
       .toSet
   )
-
 }
